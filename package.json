@@ -10,8 +10,7 @@
     "typecheck": "turbo typecheck"
   },
   "devDependencies": {
-    "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
+    "@biomejs/biome": "2.4.9",
     "turbo": "^2.8.17",
     "typescript": "5.9.3"
   },

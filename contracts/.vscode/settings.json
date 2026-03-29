@@ -1,3 +1,20 @@
 {
-  "files.eol": "\n"
+  "files.eol": "\n",
+  "editor.formatOnSave": true,
+  "[clarity]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "StacksLabs.clarity-stacks"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  }
 }
