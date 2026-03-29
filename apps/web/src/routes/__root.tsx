@@ -1,6 +1,7 @@
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 
 import appCss from "@workspace/ui/globals.css?url";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const Route = createRootRoute({
 	head: () => ({
@@ -13,10 +14,29 @@ export const Route = createRootRoute({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "TanStack Start Starter",
+				title: "ClarionFi | Bitcoin-Native Lending on Stacks",
+			},
+			{
+				name: "description",
+				content:
+					"ClarionFi is a non-custodial lending protocol on Stacks for sBTC, STX, and USDC with isolated markets and fixed-rate design.",
 			},
 		],
 		links: [
+			{
+				rel: "icon",
+				href: "/favicon.svg",
+				type: "image/svg+xml",
+			},
+			{
+				rel: "apple-touch-icon",
+				href: "/favicon.svg",
+			},
+			{
+				rel: "mask-icon",
+				href: "/favicon.svg",
+				color: "#f97316",
+			},
 			{
 				rel: "stylesheet",
 				href: appCss,
@@ -28,13 +48,15 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				<HeadContent />
 			</head>
 			<body>
-				{children}
-				<Scripts />
+				<ThemeProvider defaultTheme="light" storageKey="clarionfi-theme">
+					{children}
+					<Scripts />
+				</ThemeProvider>
 			</body>
 		</html>
 	);
