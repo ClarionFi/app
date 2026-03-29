@@ -21,6 +21,11 @@ export const Route = createRootRoute({
 				content:
 					"ClarionFi is a non-custodial lending protocol on Stacks for sBTC, STX, and USDC with isolated markets and fixed-rate design.",
 			},
+			{
+				name: "talentapp:project_verification",
+				content:
+					"7cab342d5dbf7affef355dd38812c39f5c280b75d61225d43eb55a0aeb630de2e3a3654afecdfd87abf760f135e9099198509dee69710d70d1daab59c82770c0",
+			},
 		],
 		links: [
 			{
