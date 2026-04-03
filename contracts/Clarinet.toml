@@ -5,9 +5,23 @@ authors = []
 telemetry = true
 cache_dir = "./.cache"
 
-# [contracts.counter]
-# path = "contracts/counter.clar"
-# epoch = "latest"
+[contracts.sip-010-trait]
+path = "contracts/sip-010-trait.clar"
+epoch = "latest"
+
+[contracts.mock-ft]
+path = "contracts/mock-ft.clar"
+depends_on = ["sip-010-trait"]
+epoch = "latest"
+
+[contracts.clarion-oracle]
+path = "contracts/clarion-oracle.clar"
+epoch = "latest"
+
+[contracts.clarion-pool]
+path = "contracts/clarion-pool.clar"
+depends_on = ["sip-010-trait", "clarion-oracle"]
+epoch = "latest"
 
 # Check-checker settings:
 # trusted_sender: if true, inputs are trusted after tx_sender has been checked.
