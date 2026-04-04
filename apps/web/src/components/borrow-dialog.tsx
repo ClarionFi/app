@@ -13,7 +13,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { usePoolState } from "@/hooks/use-pool-state"
 import { useBroadcastTx } from "@/hooks/use-broadcast-tx"
-import { Cl } from "@stacks/transactions"
+import { Cl, Pc, PostConditionMode } from "@stacks/transactions"
 import { CONTRACTS } from "@/config/contracts"
 
 export function BorrowDialog({ asset }: { asset: SupportedAsset }) {
@@ -21,8 +21,8 @@ export function BorrowDialog({ asset }: { asset: SupportedAsset }) {
   const { poolState } = usePoolState()
   const { mutate: broadcast, isPending: isTxPending } = useBroadcastTx()
 
-  const isActiveAsset = poolState?.assetContract?.includes(asset.id) || (asset.id === 'stx' && poolState?.assetContract === null);
-  const borrowApy = isActiveAsset && poolState ? `${poolState.borrowApy.toFixed(2)}%` : "0.00%";
+  const isActiveAsset = poolState?.assetContract?.includes(asset.id) || asset.id === 'stx';
+  const borrowApy = isActiveAsset && poolState ? (asset.id === 'stx' ? '--' : `${poolState.borrowApy.toFixed(2)}%`) : "0.00%";
   const healthFactor = isActiveAsset && poolState ? "Safe" : "--";
   const availableLiquidity = isActiveAsset && poolState ? (poolState.totalLiquidAssets / (10 ** asset.decimals)).toFixed(2) : "0.00";
 
@@ -38,6 +38,13 @@ export function BorrowDialog({ asset }: { asset: SupportedAsset }) {
     const tokenPrincipal = asset.id === 'stx' ? `${poolAddress}.mock-ft` : asset.contractAddress;
     const [tokenAddress, tokenName] = tokenPrincipal!.split(".");
 
+    const postConditions: any[] = [];
+    if (asset.id !== 'stx') {
+      postConditions.push(
+        Pc.principal(`${poolAddress}.${poolName}` as `${string}.${string}`).willSendEq(microAmount).ft(tokenPrincipal as `${string}.${string}`, tokenName)
+      );
+    }
+
     broadcast({
       type: "contract-call",
       params: {
@@ -47,7 +54,9 @@ export function BorrowDialog({ asset }: { asset: SupportedAsset }) {
         functionArgs: [
           Cl.contractPrincipal(tokenAddress, tokenName),
           Cl.uint(microAmount)
-        ]
+        ],
+        postConditionMode: PostConditionMode.Deny,
+        postConditions,
       }
     })
   }

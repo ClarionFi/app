@@ -14,7 +14,8 @@ import { toast } from "sonner"
 import { usePoolState } from "@/hooks/use-pool-state"
 import { useBroadcastTx } from "@/hooks/use-broadcast-tx"
 import { useUserBalances } from "@/hooks/use-user-balances"
-import { Cl } from "@stacks/transactions"
+import { useUserData } from "@/hooks/use-user-data"
+import { Cl, Pc, PostConditionMode } from "@stacks/transactions"
 import { CONTRACTS } from "@/config/contracts"
 
 export function DepositDialog({ asset }: { asset: SupportedAsset }) {
@@ -22,9 +23,10 @@ export function DepositDialog({ asset }: { asset: SupportedAsset }) {
   const { poolState } = usePoolState()
   const { mutate: broadcast, isPending: isTxPending } = useBroadcastTx()
   const { data: balances } = useUserBalances()
+  const { stxAddress } = useUserData()
 
-  const isActiveAsset = poolState?.assetContract?.includes(asset.id) || (asset.id === 'stx' && poolState?.assetContract === null);
-  const supplyApy = isActiveAsset && poolState ? `${poolState.supplyApy.toFixed(2)}%` : "0.00%";
+  const isActiveAsset = poolState?.assetContract?.includes(asset.id) || asset.id === 'stx';
+  const supplyApy = isActiveAsset && poolState ? (asset.id === 'stx' ? '--' : `${poolState.supplyApy.toFixed(2)}%`) : "0.00%";
   const collateralFactor = isActiveAsset && poolState ? `${(poolState.collateralFactorBps / 100).toFixed(0)}%` : "--";
   const userBalance = balances?.[asset.id] || "0.00";
 
@@ -41,18 +43,43 @@ export function DepositDialog({ asset }: { asset: SupportedAsset }) {
     const tokenPrincipal = asset.id === 'stx' ? `${poolAddress}.mock-ft` : asset.contractAddress;
     const [tokenAddress, tokenName] = tokenPrincipal!.split(".");
 
-    broadcast({
-      type: "contract-call",
-      params: {
-        contractAddress: poolAddress,
-        contractName: poolName,
-        functionName: "supply",
-        functionArgs: [
-          Cl.contractPrincipal(tokenAddress, tokenName),
-          Cl.uint(microAmount)
-        ]
+    const postConditions: any[] = [];
+    if (stxAddress) {
+      if (asset.id === 'stx') {
+        postConditions.push(Pc.principal(stxAddress).willSendEq(microAmount).ustx());
+      } else {
+        postConditions.push(Pc.principal(stxAddress).willSendEq(microAmount).ft(tokenPrincipal as `${string}.${string}`, tokenName));
       }
-    })
+    }
+
+    if (asset.id === 'stx') {
+      broadcast({
+        type: "contract-call",
+        params: {
+          contractAddress: poolAddress,
+          contractName: poolName,
+          functionName: "deposit-collateral",
+          functionArgs: [Cl.uint(microAmount)],
+          postConditionMode: PostConditionMode.Deny,
+          postConditions,
+        }
+      })
+    } else {
+      broadcast({
+        type: "contract-call",
+        params: {
+          contractAddress: poolAddress,
+          contractName: poolName,
+          functionName: "supply",
+          functionArgs: [
+            Cl.contractPrincipal(tokenAddress, tokenName),
+            Cl.uint(microAmount)
+          ],
+          postConditionMode: PostConditionMode.Deny,
+          postConditions,
+        }
+      })
+    }
   }
 
   return (

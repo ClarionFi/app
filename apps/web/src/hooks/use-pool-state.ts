@@ -10,6 +10,7 @@ export type PoolState = {
   totalLiquidAssets: number;
   totalDebt: number;
   totalAssets: number;
+  totalStxCollateral: number;
   collateralFactorBps: number;
   liquidationThresholdBps: number;
   borrowFeeBps: number;
@@ -38,6 +39,20 @@ export function usePoolState() {
 
       const jsonResult = cvToJSON(result);
 
+      // Fetch STX Balance of the contract
+      const fullContractId = `${contractAddress}.${contractName}`;
+      const accountsApiUrl = `${network.client.baseUrl}/extended/v1/address/${fullContractId}/balances`;
+      let totalStxCollateral = 0;
+      try {
+        const stxBalanceRes = await fetch(accountsApiUrl);
+        const balances = await stxBalanceRes.json();
+        if (balances && balances.stx) {
+          totalStxCollateral = Number(balances.stx.balance);
+        }
+      } catch (err) {
+        console.error("Failed to fetch STX pool balance:", err);
+      }
+
       if (jsonResult && jsonResult.success) {
         const data = jsonResult.value.value;
         setPoolState({
@@ -48,6 +63,7 @@ export function usePoolState() {
           totalLiquidAssets: Number(data['total-liquid-assets'].value),
           totalDebt: Number(data['total-debt'].value),
           totalAssets: Number(data['total-assets'].value),
+          totalStxCollateral,
           collateralFactorBps: Number(data['collateral-factor-bps'].value),
           liquidationThresholdBps: Number(data['liquidation-threshold-bps'].value),
           borrowFeeBps: Number(data['borrow-fee-bps'].value),

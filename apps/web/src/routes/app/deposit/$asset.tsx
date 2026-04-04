@@ -26,14 +26,21 @@ function AssetDepositView() {
     )
   }
 
-  const isActiveAsset = poolState?.assetContract?.includes(assetData.id) || (assetData.id === 'stx' && poolState?.assetContract === null);
+  const isActiveAsset = poolState?.assetContract?.includes(assetData.id) || assetData.id === 'stx';
   const formatAmount = (amt: number) => (amt / (10 ** assetData.decimals)).toLocaleString(undefined, { maximumFractionDigits: 2 });
   const formatUSD = (amt: number) => `$${(amt / (10 ** assetData.decimals)).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 
-  const totalDeposited = isActiveAsset && poolState ? formatAmount(poolState.totalAssets) : "0.00";
+  const getAssetTotal = () => {
+    if (!isActiveAsset || !poolState) return 0;
+    return assetData.id === 'stx' ? poolState.totalStxCollateral : poolState.totalAssets;
+  };
+
+  const totalDepositedRaw = getAssetTotal();
+  const totalDeposited = formatAmount(totalDepositedRaw);
+  const totalDepositedUSD = formatUSD(totalDepositedRaw);
+
   const totalBorrowed = isActiveAsset && poolState ? formatAmount(poolState.totalDebt) : "0.00";
   const supplyApy = isActiveAsset && poolState ? `${poolState.supplyApy.toFixed(2)}%` : "0.00%";
-  const totalDepositedUSD = isActiveAsset && poolState ? formatUSD(poolState.totalAssets) : "$0.00";
   const totalBorrowedUSD = isActiveAsset && poolState ? formatUSD(poolState.totalDebt) : "$0.00";
 
   return (
