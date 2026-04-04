@@ -1,0 +1,103 @@
+name: Clarinet Contract CI/CD
+
+on:
+  pull_request:
+    paths:
+      - "contracts/**"
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "contracts/**"
+
+concurrency:
+  group: contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ───────────────────────────────────────────────────────────
+  # Stage 1: Static Analysis — Validate & Lint Clarity contracts
+  # ───────────────────────────────────────────────────────────
+  clarity-check:
+    name: Clarity Validation & Linting
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/stx-labs/clarinet:latest
+    defaults:
+      run:
+        working-directory: contracts
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Clarity contracts
+        run: clarinet check --use-on-disk-deployment-plan
+
+      - name: Validate Clarity contracts (JSON report)
+        if: always()
+        run: clarinet check --use-on-disk-deployment-plan --output=json > clarity-check-report.json
+
+      - name: Check Clarity formatting
+        run: clarinet fmt --check
+
+      - name: Upload check report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clarity-check-report
+          path: contracts/clarity-check-report.json
+          retention-days: 14
+
+  # ───────────────────────────────────────────────────────────
+  # Stage 2: Unit Tests — Run Clarinet SDK tests with Vitest
+  # ───────────────────────────────────────────────────────────
+  clarity-tests:
+    name: Clarity Unit Tests
+    runs-on: ubuntu-latest
+    needs: clarity-check
+    container:
+      image: ghcr.io/stx-labs/clarinet:latest
+    defaults:
+      run:
+        working-directory: contracts
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.9"
+
+      - name: Install test dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run unit tests
+        run: bun run test
+
+      - name: Run tests with coverage & cost reports
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: bun run test:report
+
+  # ───────────────────────────────────────────────────────────
+  # Stage 3: Deployment Plan Validation
+  # ───────────────────────────────────────────────────────────
+  deployment-check:
+    name: Deployment Plan Validation
+    runs-on: ubuntu-latest
+    needs: clarity-tests
+    container:
+      image: ghcr.io/stx-labs/clarinet:latest
+    defaults:
+      run:
+        working-directory: contracts
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate mainnet deployment plan
+        run: clarinet deployments check --mainnet

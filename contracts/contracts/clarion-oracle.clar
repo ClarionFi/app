@@ -27,23 +27,22 @@
 )
 
 (define-read-only (get-stx-price)
-  (let
-    (
+  (let (
       (price (var-get stx-price))
       (last-updated (var-get updated-at))
     )
     (asserts! (> price u0) err-zero-price)
-    (asserts! (<= (- burn-block-height last-updated) (var-get max-price-age)) err-stale-price)
+    (asserts! (<= (- burn-block-height last-updated) (var-get max-price-age))
+      err-stale-price
+    )
     (ok price)
   )
 )
 
 (define-read-only (get-oracle-state)
-  (ok
-    {
-      stx-price: (var-get stx-price),
-      updated-at: (var-get updated-at),
-      max-price-age: (var-get max-price-age)
-    }
-  )
+  (ok {
+    stx-price: (var-get stx-price),
+    updated-at: (var-get updated-at),
+    max-price-age: (var-get max-price-age),
+  })
 )

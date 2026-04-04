@@ -31,25 +31,39 @@
 (define-data-var close-factor-bps uint u5000)
 (define-data-var borrow-fee-bps uint u30)
 
-(define-map supplier-shares principal uint)
-(define-map borrower-debt principal uint)
-(define-map borrower-collateral principal uint)
+(define-map supplier-shares
+  principal
+  uint
+)
+(define-map borrower-debt
+  principal
+  uint
+)
+(define-map borrower-collateral
+  principal
+  uint
+)
 
 (define-private (is-owner)
   (is-eq tx-sender contract-owner)
 )
 
 (define-private (ensure-active)
-  (if (var-get paused) err-pool-paused (ok true))
+  (if (var-get paused)
+    err-pool-paused
+    (ok true)
+  )
 )
 
 (define-private (ensure-initialized)
-  (if (var-get initialized) (ok true) err-not-initialized)
+  (if (var-get initialized)
+    (ok true)
+    err-not-initialized
+  )
 )
 
 (define-private (ensure-token (asset-token <sip-010-trait>))
-  (if
-    (is-eq (some (contract-of asset-token)) (var-get asset-contract))
+  (if (is-eq (some (contract-of asset-token)) (var-get asset-contract))
     (ok true)
     err-asset-mismatch
   )
@@ -59,21 +73,36 @@
   (+ (var-get total-liquid-assets) (var-get total-debt))
 )
 
-(define-private (get-collateral-value (collateral uint) (price uint))
+(define-private (get-collateral-value
+    (collateral uint)
+    (price uint)
+  )
   (/ (* collateral price) precision)
 )
 
-(define-private (get-borrow-limit (collateral uint) (price uint))
-  (/ (* (get-collateral-value collateral price) (var-get collateral-factor-bps)) bps-scale)
+(define-private (get-borrow-limit
+    (collateral uint)
+    (price uint)
+  )
+  (/ (* (get-collateral-value collateral price) (var-get collateral-factor-bps))
+    bps-scale
+  )
 )
 
-(define-private (get-liquidation-limit (collateral uint) (price uint))
-  (/ (* (get-collateral-value collateral price) (var-get liquidation-threshold-bps)) bps-scale)
+(define-private (get-liquidation-limit
+    (collateral uint)
+    (price uint)
+  )
+  (/
+    (* (get-collateral-value collateral price)
+      (var-get liquidation-threshold-bps)
+    )
+    bps-scale
+  )
 )
 
 (define-private (compute-share-mint (amount uint))
-  (let
-    (
+  (let (
       (shares (var-get total-shares))
       (assets (total-assets))
     )
@@ -85,8 +114,7 @@
 )
 
 (define-private (compute-asset-amount (shares uint))
-  (let
-    (
+  (let (
       (all-shares (var-get total-shares))
       (assets (total-assets))
     )
@@ -101,7 +129,10 @@
   (contract-call? .clarion-oracle get-stx-price)
 )
 
-(define-private (position-safe-after (collateral uint) (debt uint))
+(define-private (position-safe-after
+    (collateral uint)
+    (debt uint)
+  )
   (let ((price (unwrap-panic (load-price))))
     (<= debt (get-borrow-limit collateral price))
   )
@@ -126,15 +157,17 @@
 )
 
 (define-public (set-risk-params
-  (new-collateral-factor-bps uint)
-  (new-liquidation-threshold-bps uint)
-  (new-liquidation-bonus-bps uint)
-  (new-close-factor-bps uint)
-  (new-borrow-fee-bps uint)
-)
+    (new-collateral-factor-bps uint)
+    (new-liquidation-threshold-bps uint)
+    (new-liquidation-bonus-bps uint)
+    (new-close-factor-bps uint)
+    (new-borrow-fee-bps uint)
+  )
   (begin
     (asserts! (is-owner) err-owner-only)
-    (asserts! (< new-collateral-factor-bps new-liquidation-threshold-bps) err-position-unsafe)
+    (asserts! (< new-collateral-factor-bps new-liquidation-threshold-bps)
+      err-position-unsafe
+    )
     (asserts! (<= new-liquidation-threshold-bps bps-scale) err-position-unsafe)
     (asserts! (>= new-liquidation-bonus-bps bps-scale) err-position-unsafe)
     (asserts! (<= new-close-factor-bps bps-scale) err-position-unsafe)
@@ -147,9 +180,11 @@
   )
 )
 
-(define-public (supply (asset-token <sip-010-trait>) (amount uint))
-  (let
-    (
+(define-public (supply
+    (asset-token <sip-010-trait>)
+    (amount uint)
+  )
+  (let (
       (minted-shares (compute-share-mint amount))
       (current-shares (default-to u0 (map-get? supplier-shares tx-sender)))
     )
@@ -165,9 +200,11 @@
   )
 )
 
-(define-public (withdraw (asset-token <sip-010-trait>) (share-amount uint))
-  (let
-    (
+(define-public (withdraw
+    (asset-token <sip-010-trait>)
+    (share-amount uint)
+  )
+  (let (
       (current-shares (default-to u0 (map-get? supplier-shares tx-sender)))
       (asset-amount (compute-asset-amount share-amount))
     )
@@ -177,11 +214,15 @@
     (asserts! (> share-amount u0) err-zero-amount)
     (asserts! (>= current-shares share-amount) err-insufficient-shares)
     (asserts! (> asset-amount u0) err-zero-amount)
-    (asserts! (>= (var-get total-liquid-assets) asset-amount) err-insufficient-liquidity)
+    (asserts! (>= (var-get total-liquid-assets) asset-amount)
+      err-insufficient-liquidity
+    )
     (var-set total-shares (- (var-get total-shares) share-amount))
     (var-set total-liquid-assets (- (var-get total-liquid-assets) asset-amount))
     (map-set supplier-shares tx-sender (- current-shares share-amount))
-    (try! (contract-call? asset-token transfer asset-amount .clarion-pool tx-sender none))
+    (try! (contract-call? asset-token transfer asset-amount .clarion-pool tx-sender
+      none
+    ))
     (ok asset-amount)
   )
 )
@@ -191,15 +232,14 @@
     (try! (ensure-initialized))
     (try! (ensure-active))
     (asserts! (> amount u0) err-zero-amount)
-    (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
+    (try! (stx-transfer? amount tx-sender .clarion-pool))
     (map-set borrower-collateral tx-sender (+ current-collateral amount))
     (ok (+ current-collateral amount))
   )
 )
 
 (define-public (withdraw-collateral (amount uint))
-  (let
-    (
+  (let (
       (caller tx-sender)
       (current-collateral (default-to u0 (map-get? borrower-collateral tx-sender)))
       (current-debt (default-to u0 (map-get? borrower-debt tx-sender)))
@@ -209,17 +249,21 @@
     (asserts! (> amount u0) err-zero-amount)
     (asserts! (>= current-collateral amount) err-insufficient-collateral)
     (let ((next-collateral (- current-collateral amount)))
-      (asserts! (position-safe-after next-collateral current-debt) err-position-unsafe)
+      (asserts! (position-safe-after next-collateral current-debt)
+        err-position-unsafe
+      )
       (map-set borrower-collateral tx-sender next-collateral)
-      (try! (as-contract (stx-transfer? amount tx-sender caller)))
+      (try! (as-contract? ((with-stx amount)) (try! (stx-transfer? amount tx-sender caller))))
       (ok next-collateral)
     )
   )
 )
 
-(define-public (borrow (asset-token <sip-010-trait>) (amount uint))
-  (let
-    (
+(define-public (borrow
+    (asset-token <sip-010-trait>)
+    (amount uint)
+  )
+  (let (
       (current-collateral (default-to u0 (map-get? borrower-collateral tx-sender)))
       (current-debt (default-to u0 (map-get? borrower-debt tx-sender)))
       (fee (/ (* amount (var-get borrow-fee-bps)) bps-scale))
@@ -229,8 +273,12 @@
     (try! (ensure-active))
     (try! (ensure-token asset-token))
     (asserts! (> amount u0) err-zero-amount)
-    (asserts! (>= (var-get total-liquid-assets) amount) err-insufficient-liquidity)
-    (asserts! (position-safe-after current-collateral next-debt) err-position-unsafe)
+    (asserts! (>= (var-get total-liquid-assets) amount)
+      err-insufficient-liquidity
+    )
+    (asserts! (position-safe-after current-collateral next-debt)
+      err-position-unsafe
+    )
     (map-set borrower-debt tx-sender next-debt)
     (var-set total-debt (+ (var-get total-debt) amount fee))
     (var-set total-liquid-assets (- (var-get total-liquid-assets) amount))
@@ -239,11 +287,16 @@
   )
 )
 
-(define-public (repay (asset-token <sip-010-trait>) (amount uint))
-  (let
-    (
+(define-public (repay
+    (asset-token <sip-010-trait>)
+    (amount uint)
+  )
+  (let (
       (current-debt (default-to u0 (map-get? borrower-debt tx-sender)))
-      (repay-amount (if (> amount current-debt) current-debt amount))
+      (repay-amount (if (> amount current-debt)
+        current-debt
+        amount
+      ))
       (next-debt (- current-debt repay-amount))
     )
     (try! (ensure-initialized))
@@ -251,7 +304,9 @@
     (try! (ensure-token asset-token))
     (asserts! (> current-debt u0) err-no-debt)
     (asserts! (> amount u0) err-zero-amount)
-    (try! (contract-call? asset-token transfer repay-amount tx-sender .clarion-pool none))
+    (try! (contract-call? asset-token transfer repay-amount tx-sender .clarion-pool
+      none
+    ))
     (map-set borrower-debt tx-sender next-debt)
     (var-set total-debt (- (var-get total-debt) repay-amount))
     (var-set total-liquid-assets (+ (var-get total-liquid-assets) repay-amount))
@@ -259,19 +314,28 @@
   )
 )
 
-(define-public (liquidate (asset-token <sip-010-trait>) (borrower principal) (requested-repay uint))
-  (let
-    (
+(define-public (liquidate
+    (asset-token <sip-010-trait>)
+    (borrower principal)
+    (requested-repay uint)
+  )
+  (let (
       (liquidator tx-sender)
       (price (unwrap-panic (load-price)))
       (current-debt (default-to u0 (map-get? borrower-debt borrower)))
       (current-collateral (default-to u0 (map-get? borrower-collateral borrower)))
       (liquidation-limit (get-liquidation-limit current-collateral price))
       (max-close (/ (* current-debt (var-get close-factor-bps)) bps-scale))
-      (repay-amount (if (> requested-repay max-close) max-close requested-repay))
+      (repay-amount (if (> requested-repay max-close)
+        max-close
+        requested-repay
+      ))
       (base-seize (/ (* repay-amount precision) price))
       (collateral-to-seize (/ (* base-seize (var-get liquidation-bonus-bps)) bps-scale))
-      (capped-seize (if (> collateral-to-seize current-collateral) current-collateral collateral-to-seize))
+      (capped-seize (if (> collateral-to-seize current-collateral)
+        current-collateral
+        collateral-to-seize
+      ))
       (next-debt (- current-debt repay-amount))
       (next-collateral (- current-collateral capped-seize))
     )
@@ -281,68 +345,69 @@
     (asserts! (> requested-repay u0) err-zero-amount)
     (asserts! (> current-debt u0) err-no-debt)
     (asserts! (> current-debt liquidation-limit) err-position-healthy)
-    (try! (contract-call? asset-token transfer repay-amount liquidator (as-contract tx-sender) none))
+    (try! (contract-call? asset-token transfer repay-amount liquidator
+      .clarion-pool none
+    ))
     (map-set borrower-debt borrower next-debt)
     (map-set borrower-collateral borrower next-collateral)
     (var-set total-debt (- (var-get total-debt) repay-amount))
     (var-set total-liquid-assets (+ (var-get total-liquid-assets) repay-amount))
-    (try! (as-contract (stx-transfer? capped-seize tx-sender liquidator)))
-    (ok { repaid: repay-amount, seized: capped-seize, remaining-debt: next-debt })
+    (try! (as-contract? ((with-stx capped-seize)) (try! (stx-transfer? capped-seize tx-sender liquidator))))
+    (ok {
+      repaid: repay-amount,
+      seized: capped-seize,
+      remaining-debt: next-debt,
+    })
   )
 )
 
 (define-read-only (get-supplier-position (supplier principal))
-  (let
-    (
+  (let (
       (shares (default-to u0 (map-get? supplier-shares supplier)))
       (asset-claim (compute-asset-amount shares))
     )
-    (ok { shares: shares, asset-claim: asset-claim })
+    (ok {
+      shares: shares,
+      asset-claim: asset-claim,
+    })
   )
 )
 
 (define-read-only (get-borrower-position (borrower principal))
-  (let
-    (
+  (let (
       (price (unwrap-panic (load-price)))
       (collateral (default-to u0 (map-get? borrower-collateral borrower)))
       (debt (default-to u0 (map-get? borrower-debt borrower)))
       (borrow-limit (get-borrow-limit collateral price))
       (liquidation-limit (get-liquidation-limit collateral price))
-      (health-factor
-        (if (is-eq debt u0)
-          u999999999
-          (/ (* liquidation-limit precision) debt)
-        )
-      )
+      (health-factor (if (is-eq debt u0)
+        u999999999
+        (/ (* liquidation-limit precision) debt)
+      ))
     )
-    (ok
-      {
-        collateral: collateral,
-        debt: debt,
-        borrow-limit: borrow-limit,
-        liquidation-limit: liquidation-limit,
-        health-factor: health-factor
-      }
-    )
+    (ok {
+      collateral: collateral,
+      debt: debt,
+      borrow-limit: borrow-limit,
+      liquidation-limit: liquidation-limit,
+      health-factor: health-factor,
+    })
   )
 )
 
 (define-read-only (get-pool-state)
-  (ok
-    {
-      initialized: (var-get initialized),
-      paused: (var-get paused),
-      asset-contract: (var-get asset-contract),
-      total-shares: (var-get total-shares),
-      total-liquid-assets: (var-get total-liquid-assets),
-      total-debt: (var-get total-debt),
-      total-assets: (total-assets),
-      collateral-factor-bps: (var-get collateral-factor-bps),
-      liquidation-threshold-bps: (var-get liquidation-threshold-bps),
-      liquidation-bonus-bps: (var-get liquidation-bonus-bps),
-      close-factor-bps: (var-get close-factor-bps),
-      borrow-fee-bps: (var-get borrow-fee-bps)
-    }
-  )
+  (ok {
+    initialized: (var-get initialized),
+    paused: (var-get paused),
+    asset-contract: (var-get asset-contract),
+    total-shares: (var-get total-shares),
+    total-liquid-assets: (var-get total-liquid-assets),
+    total-debt: (var-get total-debt),
+    total-assets: (total-assets),
+    collateral-factor-bps: (var-get collateral-factor-bps),
+    liquidation-threshold-bps: (var-get liquidation-threshold-bps),
+    liquidation-bonus-bps: (var-get liquidation-bonus-bps),
+    close-factor-bps: (var-get close-factor-bps),
+    borrow-fee-bps: (var-get borrow-fee-bps),
+  })
 )
