@@ -12,11 +12,14 @@ import { Button } from "@workspace/ui/components/button"
 import { useState } from "react"
 import { toast } from "sonner"
 import { usePoolState } from "@/hooks/use-pool-state"
+import { useBroadcastTx } from "@/hooks/use-broadcast-tx"
+import { Cl } from "@stacks/transactions"
+import { CONTRACTS } from "@/config/contracts"
 
 export function BorrowDialog({ asset }: { asset: SupportedAsset }) {
   const [amount, setAmount] = useState("")
-  const [isTxPending, setIsTxPending] = useState(false)
   const { poolState } = usePoolState()
+  const { mutate: broadcast, isPending: isTxPending } = useBroadcastTx()
 
   const isActiveAsset = poolState?.assetContract?.includes(asset.id) || (asset.id === 'stx' && poolState?.assetContract === null);
   const borrowApy = isActiveAsset && poolState ? `${poolState.borrowApy.toFixed(2)}%` : "0.00%";
@@ -27,14 +30,21 @@ export function BorrowDialog({ asset }: { asset: SupportedAsset }) {
       toast.error("Please enter a valid amount")
       return
     }
-    
-    setIsTxPending(true)
-    
-    setTimeout(() => {
-      setIsTxPending(false)
-      toast.success(`Successfully borrowed ${amount} ${asset.symbol}`)
-      setAmount("")
-    }, 2000)
+
+    const microAmount = Math.floor(Number(amount) * (10 ** asset.decimals));
+    const [contractAddress, contractName] = CONTRACTS.clarionPool.split(".");
+
+    broadcast({
+      method: "stx_callContract",
+      params: {
+        contractAddress,
+        contractName,
+        functionName: "borrow",
+        functionArgs: [
+          Cl.uint(microAmount)
+        ]
+      }
+    })
   }
 
   return (

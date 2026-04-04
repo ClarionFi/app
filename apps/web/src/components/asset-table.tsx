@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/button"
 import { ArrowRightIcon } from "lucide-react"
 import { usePoolState } from "@/hooks/use-pool-state"
-import { CONTRACTS } from "@/config/contracts"
+
 
 type AssetTableProps = {
   assets: SupportedAsset[]
