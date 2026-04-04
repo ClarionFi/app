@@ -55,9 +55,11 @@ export function AssetTable({ assets, mode }: AssetTableProps) {
                 <tr key={asset.id} className="transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
-                        {asset.symbol.slice(0, 1)}
-                      </div>
+                      <img 
+                        src={asset.icon} 
+                        alt={asset.symbol} 
+                        className="h-10 w-10 shrink-0 rounded-full object-contain bg-muted"
+                      />
                       <div className="flex flex-col">
                         <span className="font-semibold text-foreground">{asset.name}</span>
                         <span className="text-xs text-muted-foreground">{asset.symbol}</span>

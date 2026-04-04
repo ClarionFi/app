@@ -5,8 +5,8 @@ export type SupportedAsset = {
   symbol: string;
   name: string;
   decimals: number;
-  icon?: string;
-  contractAddress?: string; // For SIP-010
+  icon: string;
+  contractAddress?: string;
 };
 
 export const SUPPORTED_ASSETS: Record<string, SupportedAsset> = {
@@ -14,19 +14,22 @@ export const SUPPORTED_ASSETS: Record<string, SupportedAsset> = {
     id: "stx",
     symbol: "STX",
     name: "Stacks",
-    decimals: 6, // 1 STX = 1,000,000 micro-STX
+    decimals: 6,
+    icon: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/stacks/info/logo.png",
   },
   sbtc: {
     id: "sbtc",
     symbol: "sBTC",
     name: "sBTC",
     decimals: 8,
+    icon: "https://raw.githubusercontent.com/stacks-network/sbtc/main/assets/sbtc-logo.png",
   },
   usdc: {
     id: "usdc",
     symbol: "USDC",
     name: "USD Coin",
-    decimals: 6, // standard bridging decimals on Stacks
+    decimals: 6,
+    icon: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png",
   },
 };
 

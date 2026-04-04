@@ -46,9 +46,11 @@ function AssetDepositView() {
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-2xl">
-              {assetData.symbol.slice(0, 1)}
-            </div>
+            <img 
+              src={assetData.icon} 
+              alt={assetData.symbol} 
+              className="h-14 w-14 shrink-0 rounded-full object-contain bg-muted"
+            />
             <div className="flex flex-col">
               <h1 className="font-heading text-3xl font-bold flex items-center gap-2">
                 {assetData.name} <span className="text-muted-foreground text-xl font-normal">{assetData.symbol}</span>
