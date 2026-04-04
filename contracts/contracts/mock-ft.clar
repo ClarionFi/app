@@ -3,20 +3,16 @@
 (define-fungible-token mock-usdc)
 
 (define-constant contract-owner tx-sender)
+(define-constant token-uri none)
 (define-constant err-owner-only (err u100))
 (define-constant err-same-sender-recipient (err u101))
 (define-constant err-zero-amount (err u102))
 (define-constant err-not-authorized (err u103))
 
-(define-data-var token-uri (optional (string-utf8 256)) none)
-
-(define-private (is-owner)
-  (is-eq tx-sender contract-owner)
-)
-
 (define-public (mint (amount uint) (recipient principal))
   (begin
-    (asserts! (is-owner) err-owner-only)
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (asserts! (> amount u0) err-zero-amount)
     (try! (ft-mint? mock-usdc amount recipient))
     (ok true)
   )
@@ -26,7 +22,7 @@
   (begin
     (asserts! (> amount u0) err-zero-amount)
     (asserts! (not (is-eq sender recipient)) err-same-sender-recipient)
-    (asserts! (is-eq sender tx-sender) err-not-authorized)
+    (asserts! (or (is-eq sender tx-sender) (is-eq sender contract-caller)) err-not-authorized)
     (match memo to-print (print to-print) 0x)
     (try! (ft-transfer? mock-usdc amount sender recipient))
     (ok true)
@@ -54,5 +50,5 @@
 )
 
 (define-read-only (get-token-uri)
-  (ok (var-get token-uri))
+  (ok token-uri)
 )

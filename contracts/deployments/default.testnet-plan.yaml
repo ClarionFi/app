@@ -1,0 +1,38 @@
+id: 0
+name: Testnet deployment
+network: testnet
+stacks-node: https://api.testnet.hiro.so
+bitcoin-node: http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332
+plan:
+  batches:
+  - id: 0
+    transactions:
+    - transaction-type: contract-publish
+      contract-name: clarion-oracle
+      expected-sender: ST3EA3JG74CT2JNDFARGPRM70J6BJ360X7WXR4ATN
+      cost: 2174706
+      path: contracts/clarion-oracle.clar
+      anchor-block-only: true
+      clarity-version: 4
+    - transaction-type: contract-publish
+      contract-name: sip-010-trait
+      expected-sender: ST3EA3JG74CT2JNDFARGPRM70J6BJ360X7WXR4ATN
+      cost: 2173283
+      path: contracts/sip-010-trait.clar
+      anchor-block-only: true
+      clarity-version: 4
+    - transaction-type: contract-publish
+      contract-name: clarion-pool
+      expected-sender: ST3EA3JG74CT2JNDFARGPRM70J6BJ360X7WXR4ATN
+      cost: 2193205
+      path: contracts/clarion-pool.clar
+      anchor-block-only: true
+      clarity-version: 4
+    - transaction-type: contract-publish
+      contract-name: mock-ft
+      expected-sender: ST3EA3JG74CT2JNDFARGPRM70J6BJ360X7WXR4ATN
+      cost: 2174706
+      path: contracts/mock-ft.clar
+      anchor-block-only: true
+      clarity-version: 4
+    epoch: '3.3'

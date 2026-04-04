@@ -7,13 +7,9 @@
 (define-data-var updated-at uint u0)
 (define-data-var max-price-age uint u144)
 
-(define-private (is-owner)
-  (is-eq tx-sender contract-owner)
-)
-
 (define-public (set-stx-price (new-price uint))
   (begin
-    (asserts! (is-owner) err-owner-only)
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
     (asserts! (> new-price u0) err-zero-price)
     (var-set stx-price new-price)
     (var-set updated-at burn-block-height)
@@ -23,7 +19,8 @@
 
 (define-public (set-max-price-age (new-max-age uint))
   (begin
-    (asserts! (is-owner) err-owner-only)
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (asserts! (> new-max-age u0) err-zero-price)
     (var-set max-price-age new-max-age)
     (ok new-max-age)
   )
