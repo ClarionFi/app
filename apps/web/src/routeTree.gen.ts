@@ -12,6 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LogoDownloadRouteImport } from './routes/logo-download'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppInsightRouteImport } from './routes/app/insight'
+import { Route as AppDepositIndexRouteImport } from './routes/app/deposit/index'
+import { Route as AppBorrowIndexRouteImport } from './routes/app/borrow/index'
+import { Route as AppDepositAssetRouteImport } from './routes/app/deposit/$asset'
+import { Route as AppBorrowAssetRouteImport } from './routes/app/borrow/$asset'
 
 const LogoDownloadRoute = LogoDownloadRouteImport.update({
   id: '/logo-download',
@@ -28,34 +34,108 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInsightRoute = AppInsightRouteImport.update({
+  id: '/insight',
+  path: '/insight',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDepositIndexRoute = AppDepositIndexRouteImport.update({
+  id: '/deposit/',
+  path: '/deposit/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBorrowIndexRoute = AppBorrowIndexRouteImport.update({
+  id: '/borrow/',
+  path: '/borrow/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDepositAssetRoute = AppDepositAssetRouteImport.update({
+  id: '/deposit/$asset',
+  path: '/deposit/$asset',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBorrowAssetRoute = AppBorrowAssetRouteImport.update({
+  id: '/borrow/$asset',
+  path: '/borrow/$asset',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/logo-download': typeof LogoDownloadRoute
+  '/app/insight': typeof AppInsightRoute
+  '/app/': typeof AppIndexRoute
+  '/app/borrow/$asset': typeof AppBorrowAssetRoute
+  '/app/deposit/$asset': typeof AppDepositAssetRoute
+  '/app/borrow/': typeof AppBorrowIndexRoute
+  '/app/deposit/': typeof AppDepositIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
   '/logo-download': typeof LogoDownloadRoute
+  '/app/insight': typeof AppInsightRoute
+  '/app': typeof AppIndexRoute
+  '/app/borrow/$asset': typeof AppBorrowAssetRoute
+  '/app/deposit/$asset': typeof AppDepositAssetRoute
+  '/app/borrow': typeof AppBorrowIndexRoute
+  '/app/deposit': typeof AppDepositIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/logo-download': typeof LogoDownloadRoute
+  '/app/insight': typeof AppInsightRoute
+  '/app/': typeof AppIndexRoute
+  '/app/borrow/$asset': typeof AppBorrowAssetRoute
+  '/app/deposit/$asset': typeof AppDepositAssetRoute
+  '/app/borrow/': typeof AppBorrowIndexRoute
+  '/app/deposit/': typeof AppDepositIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/logo-download'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/logo-download'
+    | '/app/insight'
+    | '/app/'
+    | '/app/borrow/$asset'
+    | '/app/deposit/$asset'
+    | '/app/borrow/'
+    | '/app/deposit/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/logo-download'
-  id: '__root__' | '/' | '/app' | '/logo-download'
+  to:
+    | '/'
+    | '/logo-download'
+    | '/app/insight'
+    | '/app'
+    | '/app/borrow/$asset'
+    | '/app/deposit/$asset'
+    | '/app/borrow'
+    | '/app/deposit'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/logo-download'
+    | '/app/insight'
+    | '/app/'
+    | '/app/borrow/$asset'
+    | '/app/deposit/$asset'
+    | '/app/borrow/'
+    | '/app/deposit/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRoute
+  AppRoute: typeof AppRouteWithChildren
   LogoDownloadRoute: typeof LogoDownloadRoute
 }
 
@@ -82,12 +162,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/insight': {
+      id: '/app/insight'
+      path: '/insight'
+      fullPath: '/app/insight'
+      preLoaderRoute: typeof AppInsightRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/deposit/': {
+      id: '/app/deposit/'
+      path: '/deposit'
+      fullPath: '/app/deposit/'
+      preLoaderRoute: typeof AppDepositIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/borrow/': {
+      id: '/app/borrow/'
+      path: '/borrow'
+      fullPath: '/app/borrow/'
+      preLoaderRoute: typeof AppBorrowIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/deposit/$asset': {
+      id: '/app/deposit/$asset'
+      path: '/deposit/$asset'
+      fullPath: '/app/deposit/$asset'
+      preLoaderRoute: typeof AppDepositAssetRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/borrow/$asset': {
+      id: '/app/borrow/$asset'
+      path: '/borrow/$asset'
+      fullPath: '/app/borrow/$asset'
+      preLoaderRoute: typeof AppBorrowAssetRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppInsightRoute: typeof AppInsightRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppBorrowAssetRoute: typeof AppBorrowAssetRoute
+  AppDepositAssetRoute: typeof AppDepositAssetRoute
+  AppBorrowIndexRoute: typeof AppBorrowIndexRoute
+  AppDepositIndexRoute: typeof AppDepositIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppInsightRoute: AppInsightRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppBorrowAssetRoute: AppBorrowAssetRoute,
+  AppDepositAssetRoute: AppDepositAssetRoute,
+  AppBorrowIndexRoute: AppBorrowIndexRoute,
+  AppDepositIndexRoute: AppDepositIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRoute,
+  AppRoute: AppRouteWithChildren,
   LogoDownloadRoute: LogoDownloadRoute,
 }
 export const routeTree = rootRouteImport

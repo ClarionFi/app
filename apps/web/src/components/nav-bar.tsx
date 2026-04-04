@@ -2,6 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { Button } from "@workspace/ui/components/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Logo } from "@/components/logo";
+import { ConnectButton } from "./connect-button";
 
 export function NavBar() {
 	const location = useLocation();
@@ -18,24 +19,38 @@ export function NavBar() {
 				</span>
 			</Link>
 			
-			{!isAppRoute && (
-				<nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
-					<a className="transition-colors hover:text-foreground" href="#features">
-						Overview
-					</a>
-					<a className="transition-colors hover:text-foreground" href="#workflow">
-						Mechanics
-					</a>
-					<a className="transition-colors hover:text-foreground" href="#pricing">
-						Build
-					</a>
-				</nav>
-			)}
+			<nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
+				{isAppRoute ? (
+					<>
+						<Link to="/app" className="transition-colors hover:text-foreground active:text-foreground">
+							Deposit
+						</Link>
+						<Link to="/app/borrow" className="transition-colors hover:text-foreground">
+							Borrow
+						</Link>
+						<Link to="/app/insight" className="transition-colors hover:text-foreground">
+							Insight
+						</Link>
+					</>
+				) : (
+					<>
+						<a className="transition-colors hover:text-foreground" href="#features">
+							Overview
+						</a>
+						<a className="transition-colors hover:text-foreground" href="#workflow">
+							Mechanics
+						</a>
+						<a className="transition-colors hover:text-foreground" href="#pricing">
+							Build
+						</a>
+					</>
+				)}
+			</nav>
 
 			<div className="flex items-center gap-2">
 				<ModeToggle />
 				{isAppRoute ? (
-					<Button size="sm">Connect Wallet</Button>
+					<ConnectButton/>
 				) : (
 					<Link to="/app">
 						<Button size="sm">Launch App</Button>
