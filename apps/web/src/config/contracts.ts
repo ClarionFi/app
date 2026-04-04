@@ -11,8 +11,8 @@ export const DEPLOYER_ADDRESSES = {
 export const currentDeployer = DEPLOYER_ADDRESSES.mainnet;
 
 export const CONTRACTS = {
-  clarionPool: `${currentDeployer}.clarion-pool`,
-  clarionOracle: `${currentDeployer}.clarion-oracle`,
-  mockFT: `${currentDeployer}.mock-ft`,
-  sip010Trait: `${currentDeployer}.sip-010-trait`,
+  clarionPool: `${currentDeployer}.clarion-pool-v2`,
+  clarionOracle: `${currentDeployer}.clarion-oracle-v2`,
+  mockFT: `${currentDeployer}.mock-ft-v2`,
+  sip010Trait: `${currentDeployer}.sip-010-trait-v2`,
 };

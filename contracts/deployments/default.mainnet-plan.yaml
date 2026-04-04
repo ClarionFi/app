@@ -1,0 +1,38 @@
+id: 0
+name: Mainnet deployment
+network: mainnet
+stacks-node: https://api.hiro.so
+bitcoin-node: http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332
+plan:
+  batches:
+  - id: 0
+    transactions:
+    - transaction-type: contract-publish
+      contract-name: clarion-oracle-v2
+      expected-sender: SP3EA3JG74CT2JNDFARGPRM70J6BJ360X7WM9YHN3
+      cost: 12720
+      path: contracts/clarion-oracle.clar
+      anchor-block-only: true
+      clarity-version: 4
+    - transaction-type: contract-publish
+      contract-name: sip-010-trait-v2
+      expected-sender: SP3EA3JG74CT2JNDFARGPRM70J6BJ360X7WM9YHN3
+      cost: 4950
+      path: contracts/sip-010-trait.clar
+      anchor-block-only: true
+      clarity-version: 4
+    - transaction-type: contract-publish
+      contract-name: clarion-pool-v2
+      expected-sender: SP3EA3JG74CT2JNDFARGPRM70J6BJ360X7WM9YHN3
+      cost: 126760
+      path: contracts/clarion-pool.clar
+      anchor-block-only: true
+      clarity-version: 4
+    - transaction-type: contract-publish
+      contract-name: mock-ft-v2
+      expected-sender: SP3EA3JG74CT2JNDFARGPRM70J6BJ360X7WM9YHN3
+      cost: 14750
+      path: contracts/mock-ft.clar
+      anchor-block-only: true
+      clarity-version: 4
+    epoch: '3.3'

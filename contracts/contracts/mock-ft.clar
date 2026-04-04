@@ -1,4 +1,4 @@
-(impl-trait .sip-010-trait.sip-010-trait)
+(impl-trait .sip-010-trait-v2.sip-010-trait)
 
 (define-fungible-token mock-usdc)
 

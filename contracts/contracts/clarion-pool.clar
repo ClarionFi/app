@@ -1,4 +1,4 @@
-(use-trait sip-010-trait .sip-010-trait.sip-010-trait)
+(use-trait sip-010-trait .sip-010-trait-v2.sip-010-trait)
 
 (define-constant contract-owner tx-sender)
 (define-constant precision u1000000)
@@ -126,7 +126,7 @@
 )
 
 (define-private (load-price)
-  (contract-call? .clarion-oracle get-stx-price)
+  (contract-call? .clarion-oracle-v2 get-stx-price)
 )
 
 (define-private (position-safe-after
@@ -192,7 +192,7 @@
     (try! (ensure-active))
     (try! (ensure-token asset-token))
     (asserts! (> amount u0) err-zero-amount)
-    (try! (contract-call? asset-token transfer amount tx-sender .clarion-pool none))
+    (try! (contract-call? asset-token transfer amount tx-sender .clarion-pool-v2 none))
     (var-set total-shares (+ (var-get total-shares) minted-shares))
     (var-set total-liquid-assets (+ (var-get total-liquid-assets) amount))
     (map-set supplier-shares tx-sender (+ current-shares minted-shares))
@@ -220,7 +220,7 @@
     (var-set total-shares (- (var-get total-shares) share-amount))
     (var-set total-liquid-assets (- (var-get total-liquid-assets) asset-amount))
     (map-set supplier-shares tx-sender (- current-shares share-amount))
-    (try! (contract-call? asset-token transfer asset-amount .clarion-pool tx-sender
+    (try! (contract-call? asset-token transfer asset-amount .clarion-pool-v2 tx-sender
       none
     ))
     (ok asset-amount)
@@ -232,7 +232,7 @@
     (try! (ensure-initialized))
     (try! (ensure-active))
     (asserts! (> amount u0) err-zero-amount)
-    (try! (stx-transfer? amount tx-sender .clarion-pool))
+    (try! (stx-transfer? amount tx-sender .clarion-pool-v2))
     (map-set borrower-collateral tx-sender (+ current-collateral amount))
     (ok (+ current-collateral amount))
   )
@@ -282,7 +282,7 @@
     (map-set borrower-debt tx-sender next-debt)
     (var-set total-debt (+ (var-get total-debt) amount fee))
     (var-set total-liquid-assets (- (var-get total-liquid-assets) amount))
-    (try! (contract-call? asset-token transfer amount .clarion-pool tx-sender none))
+    (try! (contract-call? asset-token transfer amount .clarion-pool-v2 tx-sender none))
     (ok next-debt)
   )
 )
@@ -304,7 +304,7 @@
     (try! (ensure-token asset-token))
     (asserts! (> current-debt u0) err-no-debt)
     (asserts! (> amount u0) err-zero-amount)
-    (try! (contract-call? asset-token transfer repay-amount tx-sender .clarion-pool
+    (try! (contract-call? asset-token transfer repay-amount tx-sender .clarion-pool-v2
       none
     ))
     (map-set borrower-debt tx-sender next-debt)
@@ -346,7 +346,7 @@
     (asserts! (> current-debt u0) err-no-debt)
     (asserts! (> current-debt liquidation-limit) err-position-healthy)
     (try! (contract-call? asset-token transfer repay-amount liquidator
-      .clarion-pool none
+      .clarion-pool-v2 none
     ))
     (map-set borrower-debt borrower next-debt)
     (map-set borrower-collateral borrower next-collateral)

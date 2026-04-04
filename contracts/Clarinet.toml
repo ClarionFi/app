@@ -5,22 +5,22 @@ authors = []
 telemetry = true
 cache_dir = "./.cache"
 
-[contracts.sip-010-trait]
+[contracts.sip-010-trait-v2]
 path = "contracts/sip-010-trait.clar"
 epoch = "latest"
 
-[contracts.mock-ft]
+[contracts.mock-ft-v2]
 path = "contracts/mock-ft.clar"
-depends_on = ["sip-010-trait"]
+depends_on = ["sip-010-trait-v2"]
 epoch = "latest"
 
-[contracts.clarion-oracle]
+[contracts.clarion-oracle-v2]
 path = "contracts/clarion-oracle.clar"
 epoch = "latest"
 
-[contracts.clarion-pool]
+[contracts.clarion-pool-v2]
 path = "contracts/clarion-pool.clar"
-depends_on = ["sip-010-trait", "clarion-oracle"]
+depends_on = ["sip-010-trait-v2", "clarion-oracle-v2"]
 epoch = "latest"
 
 # Check-checker settings:
