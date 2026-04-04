@@ -1,35 +1,51 @@
 import { useMutation } from "@tanstack/react-query";
-import { request } from "@stacks/connect";
+import { openContractCall, openSTXTransfer } from "@stacks/connect";
 import { toast } from "sonner";
-import { STACKS_NETWORK_MODE } from "@/config/contracts";
+import { network } from "@/config/contracts";
+import type { 
+  ContractCallRegularOptions, 
+  STXTransferOptions 
+} from "@stacks/connect";
 
-interface BroadcastArgs {
-  method: "stx_transferStx" | "stx_callContract" | "stx_deployContract";
-  params: any;
-}
+type ContractCallArgs = Omit<ContractCallRegularOptions, "network" | "onFinish" | "onCancel">;
+type STXTransferArgs = Omit<STXTransferOptions, "network" | "onFinish" | "onCancel">;
 
 export function useBroadcastTx() {
   return useMutation({
-    mutationFn: async ({ method, params }: BroadcastArgs) => {
-      // Ensure network is correctly passed from config
-      const response = await request(method, {
-        ...params,
-        network: STACKS_NETWORK_MODE,
+    mutationFn: async (args: { type: "contract-call"; params: ContractCallArgs } | { type: "stx-transfer"; params: STXTransferArgs }) => {
+      return new Promise((resolve, reject) => {
+        const onFinish = (data: any) => resolve(data);
+        const onCancel = () => reject(new Error("Transaction cancelled by user"));
+
+        if (args.type === "contract-call") {
+          void openContractCall({
+            ...args.params,
+            network: "mainnet",
+            onFinish,
+            onCancel,
+          });
+        } else {
+          void openSTXTransfer({
+            ...args.params,
+            network: "mainnet",
+            onFinish,
+            onCancel,
+          });
+        }
       });
-      return response;
     },
     onMutate: () => {
       toast.loading("Requesting signature...", { id: "tx-broadcast" });
     },
-    onSuccess: (data) => {
-      const txId = (data as any).txId;
-      const explorerUrl = `https://explorer.stacks.co/txid/${txId}?chain=mainnet`;
+    onSuccess: (data: any) => {
+      const txId = data.txId;
+      const explorerUrl = `https://explorer.hiro.so/txid/${txId}?chain=mainnet`;
       
       toast.success("Transaction broadcasted!", {
         id: "tx-broadcast",
-        description: "Your transaction is being processed on Stacks.",
+        description: "Your transaction is being processed on Stacks Mainnet.",
         action: {
-          label: "View in Explorer",
+          label: "View Explorer",
           onClick: () => window.open(explorerUrl, "_blank"),
         },
       });
@@ -38,7 +54,7 @@ export function useBroadcastTx() {
       console.error("Broadcast error:", error);
       toast.error("Transaction failed", {
         id: "tx-broadcast",
-        description: error.message || "User denied transaction or network error.",
+        description: error.message || "Failed to broadcast transaction.",
       });
     },
   });

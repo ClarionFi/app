@@ -13,6 +13,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { usePoolState } from "@/hooks/use-pool-state"
 import { useBroadcastTx } from "@/hooks/use-broadcast-tx"
+import { useUserBalances } from "@/hooks/use-user-balances"
 import { Cl } from "@stacks/transactions"
 import { CONTRACTS } from "@/config/contracts"
 
@@ -20,10 +21,12 @@ export function DepositDialog({ asset }: { asset: SupportedAsset }) {
   const [amount, setAmount] = useState("")
   const { poolState } = usePoolState()
   const { mutate: broadcast, isPending: isTxPending } = useBroadcastTx()
+  const { data: balances } = useUserBalances()
 
   const isActiveAsset = poolState?.assetContract?.includes(asset.id) || (asset.id === 'stx' && poolState?.assetContract === null);
   const supplyApy = isActiveAsset && poolState ? `${poolState.supplyApy.toFixed(2)}%` : "0.00%";
   const collateralFactor = isActiveAsset && poolState ? `${(poolState.collateralFactorBps / 100).toFixed(0)}%` : "--";
+  const userBalance = balances?.[asset.id] || "0.00";
 
   const handleDeposit = () => {
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
@@ -32,15 +35,20 @@ export function DepositDialog({ asset }: { asset: SupportedAsset }) {
     }
 
     const microAmount = Math.floor(Number(amount) * (10 ** asset.decimals));
-    const [contractAddress, contractName] = CONTRACTS.clarionPool.split(".");
+    const [poolAddress, poolName] = CONTRACTS.clarionPool.split(".");
+    
+    // contract trait principal is required for (asset-token <sip-010-trait>)
+    const tokenPrincipal = asset.id === 'stx' ? `${poolAddress}.mock-ft` : asset.contractAddress;
+    const [tokenAddress, tokenName] = tokenPrincipal!.split(".");
 
     broadcast({
-      method: "stx_callContract",
+      type: "contract-call",
       params: {
-        contractAddress,
-        contractName,
+        contractAddress: poolAddress,
+        contractName: poolName,
         functionName: "supply",
         functionArgs: [
+          Cl.contractPrincipal(tokenAddress, tokenName),
           Cl.uint(microAmount)
         ]
       }
@@ -76,11 +84,11 @@ export function DepositDialog({ asset }: { asset: SupportedAsset }) {
               </div>
             </div>
             <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
-              <span>Wallet Balance: 0.00 {asset.symbol}</span>
+              <span>Wallet Balance: {userBalance} {asset.symbol}</span>
               <button 
                 type="button"
                 className="text-primary hover:underline font-medium cursor-pointer"
-                onClick={() => setAmount("0")}
+                onClick={() => setAmount(userBalance)}
                 disabled={isTxPending}
               >
                 Max

@@ -24,6 +24,7 @@ export function BorrowDialog({ asset }: { asset: SupportedAsset }) {
   const isActiveAsset = poolState?.assetContract?.includes(asset.id) || (asset.id === 'stx' && poolState?.assetContract === null);
   const borrowApy = isActiveAsset && poolState ? `${poolState.borrowApy.toFixed(2)}%` : "0.00%";
   const healthFactor = isActiveAsset && poolState ? "Safe" : "--";
+  const availableLiquidity = isActiveAsset && poolState ? (poolState.totalLiquidAssets / (10 ** asset.decimals)).toFixed(2) : "0.00";
 
   const handleBorrow = () => {
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
@@ -32,15 +33,19 @@ export function BorrowDialog({ asset }: { asset: SupportedAsset }) {
     }
 
     const microAmount = Math.floor(Number(amount) * (10 ** asset.decimals));
-    const [contractAddress, contractName] = CONTRACTS.clarionPool.split(".");
+    const [poolAddress, poolName] = CONTRACTS.clarionPool.split(".");
+    
+    const tokenPrincipal = asset.id === 'stx' ? `${poolAddress}.mock-ft` : asset.contractAddress;
+    const [tokenAddress, tokenName] = tokenPrincipal!.split(".");
 
     broadcast({
-      method: "stx_callContract",
+      type: "contract-call",
       params: {
-        contractAddress,
-        contractName,
+        contractAddress: poolAddress,
+        contractName: poolName,
         functionName: "borrow",
         functionArgs: [
+          Cl.contractPrincipal(tokenAddress, tokenName),
           Cl.uint(microAmount)
         ]
       }
@@ -76,11 +81,11 @@ export function BorrowDialog({ asset }: { asset: SupportedAsset }) {
               </div>
             </div>
             <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
-              <span>Available to Borrow: 0.00 {asset.symbol}</span>
+              <span>Available to Borrow: {availableLiquidity} {asset.symbol}</span>
               <button 
                 type="button"
                 className="text-primary hover:underline font-medium cursor-pointer"
-                onClick={() => setAmount("0")}
+                onClick={() => setAmount(availableLiquidity)}
                 disabled={isTxPending}
               >
                 Max
