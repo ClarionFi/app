@@ -1,7 +1,11 @@
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import appCss from "@workspace/ui/globals.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@workspace/ui/components/sonner";
+
+const queryClient = new QueryClient();
 
 export const Route = createRootRoute({
 	head: () => ({
@@ -58,10 +62,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
-				<ThemeProvider defaultTheme="light" storageKey="clarionfi-theme">
-					{children}
-					<Scripts />
-				</ThemeProvider>
+				<QueryClientProvider client={queryClient}>
+					<ThemeProvider defaultTheme="light" storageKey="clarionfi-theme">
+						{children}
+						<Toaster />
+						<Scripts />
+					</ThemeProvider>
+				</QueryClientProvider>
 			</body>
 		</html>
 	);
