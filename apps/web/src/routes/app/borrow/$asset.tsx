@@ -46,89 +46,103 @@ function AssetBorrowView() {
   const availableLiquidityUSD = isActiveAsset && poolState ? formatUSD(poolState.totalLiquidAssets) : "$0.00";
 
   return (
-    <div className="flex flex-col gap-12 max-w-6xl mx-auto px-4 md:px-0">
-      <div className="flex flex-col gap-8">
-        <Link to="/app/borrow" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors w-fit">
+    <div className="flex flex-col w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-8 gap-8">
+      {/* Header Section */}
+      <div className="flex flex-col gap-6">
+        <Link to="/app/borrow" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors w-fit -ml-2 p-2 rounded-lg hover:bg-muted/50">
           <ArrowLeftIcon className="h-4 w-4" />
-          <span className="text-sm font-medium">Back</span>
+          <span className="text-sm font-medium">Back to borrow markets</span>
         </Link>
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <img 
-              src={assetData.icon} 
-              alt={assetData.symbol} 
-              className="h-14 w-14 shrink-0 rounded-full object-contain bg-muted"
-            />
-            <div className="flex flex-col">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border border-border p-6 rounded-2xl shadow-sm">
+          <div className="flex items-center gap-5">
+            <div className="h-16 w-16 shrink-0 rounded-full bg-background border border-border flex items-center justify-center p-2 shadow-inner">
+              <img 
+                src={assetData.icon} 
+                alt={assetData.symbol} 
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
               <h1 className="font-heading text-3xl font-bold flex items-center gap-2">
                 {assetData.name} <span className="text-muted-foreground text-xl font-normal">{assetData.symbol}</span>
               </h1>
-              <p className="text-sm text-muted-foreground flex items-center gap-1.5 pt-1">
+              <p className="text-sm text-muted-foreground flex items-center gap-1.5">
                 Asset on <span className="flex items-center gap-1 font-medium text-foreground"><LogoSmall /> Stacks Mainnet</span>
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 w-full sm:w-40 mt-4 md:mt-0">
             <DepositDialog asset={assetData} />
             <BorrowDialog asset={assetData} />
           </div>
         </div>
+      </div>
 
-        <div className="flex flex-wrap gap-12 pt-4 border-t border-border/50">
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
-              Total deposits <InfoIcon className="h-3.5 w-3.5" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold">{totalDepositedUSD}</span>
-              <span className="text-xs text-muted-foreground font-medium">{totalDeposited} {assetData.symbol}</span>
-            </div>
+      {/* Global Market Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="flex flex-col gap-1.5 p-5 rounded-2xl border border-border bg-card/50">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
+            Price <InfoIcon className="h-3.5 w-3.5" />
           </div>
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
-              Total borrows <InfoIcon className="h-3.5 w-3.5" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold">{totalBorrowedUSD}</span>
-              <span className="text-xs text-muted-foreground font-medium">{totalBorrowed} {assetData.symbol}</span>
-            </div>
+          <span className="text-2xl font-bold text-foreground">$1.00</span>
+        </div>
+        <div className="flex flex-col gap-1.5 p-5 rounded-2xl border border-border bg-card/50">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
+            Total deposits <InfoIcon className="h-3.5 w-3.5" />
           </div>
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
-              Price <InfoIcon className="h-3.5 w-3.5" />
-            </div>
-            <span className="text-2xl font-bold">$1.00</span>
+          <div className="flex flex-col">
+            <span className="text-2xl font-bold text-foreground">{totalDepositedUSD}</span>
+            <span className="text-sm text-muted-foreground font-medium">{totalDeposited} {assetData.symbol}</span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1.5 p-5 rounded-2xl border border-border bg-card/50">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
+            Total borrows <InfoIcon className="h-3.5 w-3.5" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-2xl font-bold text-foreground">{totalBorrowedUSD}</span>
+            <span className="text-sm text-muted-foreground font-medium">{totalBorrowed} {assetData.symbol}</span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1.5 p-5 rounded-2xl border border-border bg-card/50">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
+            Utilization Rate <InfoIcon className="h-3.5 w-3.5" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-2xl font-bold text-foreground">0.00%</span>
+            <span className="text-sm text-muted-foreground font-medium">Optimal: 80%</span>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 w-full lg:w-2/3">
+      {/* Main Focus Area (Borrow) */}
+      <div className="flex flex-col gap-6 mt-4">
         <div className="flex flex-col gap-2">
-          <h2 className="font-heading text-2xl font-bold">Borrow</h2>
-          <p className="text-muted-foreground text-sm">Borrow {assetData.symbol} against your collateral.</p>
+          <h2 className="font-heading text-2xl font-bold tracking-tight">Borrow {assetData.symbol}</h2>
+          <p className="text-muted-foreground text-sm max-w-2xl">Borrow {assetData.symbol} against your existing collateral position.</p>
         </div>
 
-        <div className="flex flex-col gap-8 rounded-xl border border-border bg-card/30 p-8 backdrop-blur-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium">
-                Borrow APY <InfoIcon className="h-3.5 w-3.5" />
+        <div className="flex flex-col gap-8 rounded-2xl border border-border bg-gradient-to-b from-card/30 to-background p-6 md:p-8 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 items-center">
+            <div className="flex flex-col gap-2 p-6 rounded-xl bg-card border border-border shadow-sm">
+              <div className="flex items-center justify-between text-sm text-muted-foreground font-medium">
+                <span>Borrow APY</span>
+                <InfoIcon className="h-4 w-4 opacity-70" />
               </div>
-              <span className="text-3xl font-bold text-destructive">{borrowApy}</span>
+              <span className="text-4xl font-bold text-destructive">{borrowApy}</span>
             </div>
-            <div className="flex flex-col gap-4 md:col-span-2">
-                <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground flex items-center gap-1.5 font-medium">Total borrowed <InfoIcon className="h-3.5 w-3.5" /></span>
+            <div className="flex flex-col gap-5 md:col-span-2">
+                <div className="flex justify-between items-center py-3 border-b border-border/50">
+                    <span className="text-muted-foreground font-medium flex items-center gap-2">Total borrowed <InfoIcon className="h-3.5 w-3.5" /></span>
                     <div className="flex flex-col items-end">
-                        <span className="font-bold">{totalBorrowed} {assetData.symbol}</span>
+                        <span className="font-semibold text-foreground text-base">{totalBorrowed} {assetData.symbol}</span>
                         <span className="text-xs text-muted-foreground">{totalBorrowedUSD}</span>
                     </div>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground flex items-center gap-1.5 font-medium">Available liquidity <InfoIcon className="h-3.5 w-3.5" /></span>
+                <div className="flex justify-between items-center py-3">
+                    <span className="text-muted-foreground font-medium flex items-center gap-2">Available liquidity <InfoIcon className="h-3.5 w-3.5" /></span>
                     <div className="flex flex-col items-end">
-                        <span className="font-bold">{availableLiquidity} {assetData.symbol}</span>
+                        <span className="font-semibold text-foreground text-base">{availableLiquidity} {assetData.symbol}</span>
                         <span className="text-xs text-muted-foreground">{availableLiquidityUSD}</span>
                     </div>
                 </div>
