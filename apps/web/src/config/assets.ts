@@ -13,14 +13,14 @@ export const SUPPORTED_ASSETS: Record<string, SupportedAsset> = {
 		symbol: "STX",
 		name: "Stacks",
 		decimals: 6,
-		icon: "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/stacks/info/logo.png",
+		icon: "/stx.svg",
 	},
 	sbtc: {
 		id: "sbtc",
 		symbol: "sBTC",
 		name: "sBTC",
 		decimals: 8,
-		icon: "https://raw.githubusercontent.com/stacks-network/sbtc/main/assets/sbtc-logo.png",
+		icon: "/sbtc.svg",
 		contractAddress: "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token",
 	},
 	usdc: {
